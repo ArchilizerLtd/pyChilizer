@@ -12,7 +12,8 @@ class CatFilter(ISelectionFilter):
 
     def AllowElement(self, elem):
         try:
-            if elem.Category.Id.IntegerValue == int(self.cat):
+            cat_id = DB.ElementId(self.cat) if isinstance(self.cat, DB.BuiltInCategory) else DB.ElementId(int(self.cat))
+            if elem.Category.Id == cat_id:
                 return True
             else:
                 return False
@@ -50,8 +51,9 @@ def select_with_cat_filter(cat, message):
 def preselection_with_filter(cat):
     # use pre-selection of elements, but filter them by given category name
     pre_selection = []
+    cat_id = DB.ElementId(cat) if isinstance(cat, DB.BuiltInCategory) else DB.ElementId(int(cat))
     for id in rpw.revit.uidoc.Selection.GetElementIds():
         sel_el = revit.doc.GetElement(id)
-        if sel_el.Category.Id.IntegerValue == int(cat):
+        if sel_el.Category.Id == cat_id:
             pre_selection.append(sel_el)
     return pre_selection

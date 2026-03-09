@@ -1,4 +1,4 @@
-"""Allows you to quickly renubmer the Viewports on a Sheet by the order of selection."""
+"""Allows you to quickly renumber the Viewports on a Sheet by the order of selection."""
 
 __title__ = 'Renumber\nViewports'
 

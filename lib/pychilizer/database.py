@@ -38,9 +38,11 @@ def any_fill_type(doc=revit.doc):
 
 def invis_style(doc=revit.doc):
     # get invisible lines graphics style
+    # -2000064 is the BuiltInCategory for invisible lines
+    invisible_lines_id = DB.ElementId(DB.BuiltInCategory.OST_InvisibleLines)
     for gs in DB.FilteredElementCollector(doc).OfClass(DB.GraphicsStyle):
         # find style using the category Id
-        if gs.GraphicsStyleCategory.Id.IntegerValue == -2000064:
+        if gs.GraphicsStyleCategory.Id == invisible_lines_id:
             return gs
 
 
@@ -504,7 +506,7 @@ def delete_existing_view(view_name, doc=revit.doc):
 def remove_viewtemplate(vt_id, doc=revit.doc):
     viewtype = doc.GetElement(vt_id)
     template_id = viewtype.DefaultTemplateId
-    if template_id.IntegerValue != -1:
+    if template_id != DB.ElementId.InvalidElementId:
         if forms.alert(
                 "You are about to remove the View Template"
                 " associated with this View Type. Is that cool with ya?",
@@ -554,7 +556,7 @@ def filter_from_rules(rules, or_rule=False):
 
 
 def get_param_value_as_string(p):
-    # get the value of the element paramter as a string, regardless of the storage type
+    # get the value of the element parameter as a string, regardless of the storage type
 
     if p.HasValue:
         if p_storage_type(p) == "ElementId":
@@ -562,7 +564,7 @@ def get_param_value_as_string(p):
 
                 return p.AsValueString()
             else:
-                return p.AsElementId().IntegerValue
+                return p.AsElementId().Value
         elif p_storage_type(p) == "Integer":
 
             return p.AsInteger()
@@ -641,9 +643,8 @@ def get_document_model_bics(doc=revit.doc):
         if HOST_APP.is_newer_than(2022):
             bic = category.BuiltInCategory
         else:
-            bic = System.Enum.ToObject(BIC, category.Id.IntegerValue)
-            # print (type(bic), bic)
-        if category.CategoryType==DB.CategoryType.Model and bic!= DB.BuiltInCategory.INVALID and category.Id.IntegerValue <0:
+            bic = System.Enum.ToObject(BIC, category.Id.Value)
+        if category.CategoryType==DB.CategoryType.Model and bic!= DB.BuiltInCategory.INVALID and category.Id.Value < 0:
             built_in_categories.append(bic)
     return built_in_categories
 

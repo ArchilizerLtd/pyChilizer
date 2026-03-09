@@ -51,9 +51,11 @@ def draw_rectangle(y_offset, fill_type, view, line_style):
 
 def invis_style(doc=revit.doc):
     # get invisible lines graphics style
+    # -2000064 is the BuiltInCategory for invisible lines
+    invisible_lines_id = DB.ElementId(DB.BuiltInCategory.OST_InvisibleLines)
     for gs in DB.FilteredElementCollector(doc).OfClass(DB.GraphicsStyle):
         # find style using the category Id
-        if gs.GraphicsStyleCategory.Id.IntegerValue == -2000064:
+        if gs.GraphicsStyleCategory.Id == invisible_lines_id:
             return gs
 
 

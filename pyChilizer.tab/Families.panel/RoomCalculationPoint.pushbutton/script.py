@@ -45,9 +45,9 @@ def AddRoomCalcPoint(_doc):
     if not param:
         return
     with DB.Transaction(_doc, "AddRoomCalcPoint") as t:
-        t.Start()
-        param.Set(1)
-        t.Commit()
+            t.Start()
+            param.Set(1)
+            t.Commit()
 
 
 def GetSharedParameterFile():
@@ -81,13 +81,12 @@ with ProgressBar(cancellable=True, step=1) as pb:
     for sel in selection:
         fam_ins = sel
         fam = fam_ins.Symbol.Family
-        fam_doc = revit.doc.EditFamily(fam)
-
-        AddRoomCalcPoint(fam_doc)
-
-        # print("Is document modifiable? " + str(revit.doc.IsModifiable))
-        fam = fam_doc.LoadFamily(revit.doc, FamilyLoaderOptionsHandler())
-        counter += 1
-        pb.update_progress(counter, max_value)
-
-
+        try:
+            fam_doc = revit.doc.EditFamily(fam)
+            AddRoomCalcPoint(fam_doc)
+            fam = fam_doc.LoadFamily(revit.doc, FamilyLoaderOptionsHandler())
+            counter += 1
+            pb.update_progress(counter, max_value)
+        except Exception as e:
+            forms.alert("Could not edit family. {}".format(e))
+            continue

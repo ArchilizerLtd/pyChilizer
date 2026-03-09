@@ -50,8 +50,8 @@ for w in worksets:
         for elem in all_in_w:
             try:
                 cat_name = elem.Category.Name
-                cat_id = elem.Category.Id.IntegerValue
-                if cat_id <0 and cat_id not in cat_ban_list:
+                cat_id = elem.Category.Id.Value
+                if cat_id < 0 and cat_id not in cat_ban_list:
                     element_categories[cat_name].append(elem)
                     counter += 1
             except:

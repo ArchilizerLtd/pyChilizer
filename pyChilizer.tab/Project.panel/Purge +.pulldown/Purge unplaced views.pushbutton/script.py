@@ -21,10 +21,10 @@ unplaced_views = List[DB.ElementId]([v for v in views if v not in viewports])
 message = 'There are {} unplaced Views in the current model. Are you sure you want to delete them?'.format(str(len(unplaced_views)))
 
 if len(unplaced_views) == 0:
-    forms.alert("No unpolaced Views, well done!")
+    forms.alert("No unplaced Views, well done!")
 else:
     if forms.alert(message, ok=False, yes=True, no=True, exitscript=True):
-        with revit.Transaction("Delete unplaced Views"):
+        with revit.Transaction("Delete unplaced Views", doc):
             try:
                 unplaced_names = [] # Get sheet names  
                 for view in unplaced_views:

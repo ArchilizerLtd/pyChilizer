@@ -124,8 +124,8 @@ forms.alert_ifnot(filterable_parameter_ids.Count != 0, "No parameters are common
                   exitscript=True)
 
 for id in filterable_parameter_ids:
-    # the Id of BuiltInParameters is a negative one
-    if id.IntegerValue < 0:
+    # the Id of BuiltInParameters is a negative one (use Value property in Revit 2024+)
+    if id.Value < 0:
         # iterate through all parameters of an element of category(ies)
         # until the Id of the parameter matches the id from the list of filterable parameters
         bip = match_bip_by_id(chosen_bics, id)

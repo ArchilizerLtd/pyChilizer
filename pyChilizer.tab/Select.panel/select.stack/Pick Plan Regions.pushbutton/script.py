@@ -10,7 +10,7 @@ all_plan_regions = DB.FilteredElementCollector(revit.doc) \
 plan_region_ids = []
 if all_plan_regions:
     for pr in all_plan_regions:
-        if pr.OwnerViewId.IntegerValue == revit.active_view.Id.IntegerValue:
+        if pr.OwnerViewId == revit.active_view.Id:
             plan_region_ids.append(pr.Id)
 
 

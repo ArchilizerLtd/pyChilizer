@@ -131,19 +131,19 @@ if not rds_floor_plan_type:
     some_fl_plan_type = database.get_view_family_types(DB.ViewFamily.FloorPlan, doc)[0]
     with revit.Transaction("Duplicate Floor Plan Type", doc):
         rds_floor_plan_type = some_fl_plan_type.Duplicate(RDS_FLOOR_PLAN_TYPE_NAME)
-        rds_floor_plan_type.DefaultTemplateId = DB.ElementId(-1)
+        rds_floor_plan_type.DefaultTemplateId = DB.ElementId.InvalidElementId
 
 # get default elevation template
 default_elevation_template = doc.GetElement(elev_type.DefaultTemplateId)
 if default_elevation_template:
-    check_room_vis = default_elevation_template.GetCategoryHidden(DB.ElementId(-2000160))
+    check_room_vis = default_elevation_template.GetCategoryHidden(DB.ElementId(DB.BuiltInCategory.OST_Rooms))
     # check if rooms are hidden in the default template and disable it if yes
     if check_room_vis:
         if forms.alert(
                 "To proceed, we need to remove a Default View Template associated with Elevation Type. Is that cool with ya?",
                 ok=False, yes=True, no=True, exitscript=True):
             with revit.Transaction("Remove ViewTemplate"):
-                elev_type.DefaultTemplateId = DB.ElementId(-1)
+                elev_type.DefaultTemplateId = DB.ElementId.InvalidElementId
 
 ui.set_config("sheet_number", chosen_sheet_nr)
 ui.set_config("crop_offset", form.values["crop_offset"])

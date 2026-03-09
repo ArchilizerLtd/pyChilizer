@@ -144,7 +144,7 @@ def select_views():
     if last_ids:
         for opt in all_options:
             try:
-                if opt.item.Id.IntegerValue in last_ids:
+                if opt.item.Id.Value in last_ids:
                     default_opts.append(opt)
             except:
                 continue
@@ -176,7 +176,7 @@ def select_views():
 
     # Persist current selection for next run
     try:
-        config.last_view_ids = [v.Id.IntegerValue for v in selected_views]
+        config.last_view_ids = [v.Id.Value for v in selected_views]
         script.save_config()
     except:
         pass

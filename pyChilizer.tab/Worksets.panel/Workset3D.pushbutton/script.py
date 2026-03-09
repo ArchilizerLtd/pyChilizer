@@ -39,11 +39,11 @@ def SetWorksetVisibility(view, workset):
             view.SetWorksetVisibility(work.Id, DB.WorksetVisibility.Hidden)
 
 
-# Remove ViewTempalte assinged to ViewType
+# Remove ViewTemplate assigned to ViewType
 def RemoveViewTemplate(viewtype_id):
     view_type = doc.GetElement(viewtype_id)
     template_id = view_type.DefaultTemplateId
-    if template_id.IntegerValue != -1:
+    if template_id != DB.ElementId.InvalidElementId:
         if forms.alert("You are about to remove the View Template associated with this View Type. Is that cool with ya?",
                     ok=False, yes=True, no=True, exitscript=True):
             with revit.Transaction("Remove View Template"):

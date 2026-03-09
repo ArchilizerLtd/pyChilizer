@@ -109,7 +109,7 @@ for instance_geo in geo_element:
             new_curve = geometry.CreateTransformed(inverted_transform_by_ref(bb.Min))
             curves.append(new_curve)
 # get the ID of the element's category
-el_cat_id = source_element.Category.Id.IntegerValue
+el_cat_id = source_element.Category.Id.Value
 # check the language of the family templates library
 language = database.get_family_template_language()
 fam_template_path = None

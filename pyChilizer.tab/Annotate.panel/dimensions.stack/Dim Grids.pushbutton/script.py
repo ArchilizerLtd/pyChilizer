@@ -20,7 +20,8 @@ class CustomISelectionFilter(ISelectionFilter):
         self.cat = cat
 
     def AllowElement(self, e):
-        if e.Category.Id.IntegerValue == int(self.cat):
+        cat_id = DB.ElementId(self.cat) if isinstance(self.cat, DB.BuiltInCategory) else DB.ElementId(int(self.cat))
+        if e.Category.Id == cat_id:
             return True
         else:
             return False

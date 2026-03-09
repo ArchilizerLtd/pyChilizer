@@ -17,7 +17,7 @@ DEFAULT_LENGTH = 5
 def get_text_types(doc):
     text_types = DB.FilteredElementCollector(
         doc).OfClass(DB.TextNoteType).ToElements()
-    dict_text_types = {database.get_name(i): i.Id.IntegerValue for i in text_types}
+    dict_text_types = {database.get_name(i): i.Id.Value for i in text_types}
     return dict_text_types
 
 
