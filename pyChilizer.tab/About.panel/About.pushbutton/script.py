@@ -1,7 +1,8 @@
 # dependencies
 import clr
 clr.AddReference('System.Windows.Forms')
-clr.AddReference('IronPython.Wpf')
+clr.AddReference('PresentationCore')
+clr.AddReference('PresentationFramework')
 
 import sys, os
 import webbrowser
