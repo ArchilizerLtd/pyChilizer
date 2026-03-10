@@ -1,9 +1,0 @@
-layout:
-  - Purge +
-  - -----
-  - rooms
-  - -----
-  - colorizers1
-  - colorizers2
-  - -----
-  - edit
