@@ -73,6 +73,8 @@ unused_sheets = [i for i in sheets_with_no_views if i.Id not in sheets_with_sche
 
 if len(unused_sheets) == 0:
     forms.alert("No empty Sheets, well done!")
+elif len(sheets) == 0 and len(opened_sheets_skipped) > 0:
+    forms.alert("All empty sheets are currently opened and will be skipped.")
 else:
     message = 'There are {} empty Sheets in the current model. Do you choose to proceed?'.format(
         str(len(unused_sheets)))
