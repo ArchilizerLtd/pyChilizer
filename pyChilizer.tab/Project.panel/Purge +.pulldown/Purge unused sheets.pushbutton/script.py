@@ -65,11 +65,14 @@ for sch in schedules:
         if isinstance(sheet, DB.ViewSheet):
             sheets_with_schedules.add(sheet.Id)  # use Id to be able to compare lists
 
-sheets_with_no_views = [i for i in FEC(doc).OfClass(DB.ViewSheet).WhereElementIsNotElementType() if
-                        len(i.GetAllPlacedViews()) == 0]
-
 # subtract sheets with schedules from the list of sheets with no viewports
 unused_sheets = [i for i in sheets_with_no_views if i.Id not in sheets_with_schedules]
+
+
+# sheets that are unused but currently open (cannot be deleted while open)
+open_view_ids = {v.ViewId for v in uidoc.GetOpenUIViews()}
+opened_sheets_skipped = [s for s in unused_sheets if s.Id in open_view_ids]
+sheets = [s for s in unused_sheets if s.Id not in open_view_ids]
 
 if len(unused_sheets) == 0:
     forms.alert("No empty Sheets, well done!")
