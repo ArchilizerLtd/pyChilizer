@@ -34,12 +34,14 @@ class CustomISelectionFilter(ISelectionFilter):
         
 
 active_view = revit.active_view # the current active view
-is_plan = True  # Separate condition if the view is a Plan View or Elevetaion/Section
-
-if doc.GetElement(active_view.GetTypeId()).FamilyName == 'Floor Plan':
-    is_plan = True
-else:
-    is_plan = False
+# Plan views (any kind) get the implicit horizontal sketch plane; sections/elevations need one set explicitly
+plan_view_types = {
+    DB.ViewType.FloorPlan,
+    DB.ViewType.CeilingPlan,
+    DB.ViewType.EngineeringPlan,
+    DB.ViewType.AreaPlan,
+}
+is_plan = active_view.ViewType in plan_view_types
 
 
 with forms.WarningBar(title="Pick one row of grid lines"):
@@ -80,7 +82,7 @@ if not is_plan:
         sp = DB.SketchPlane.Create(doc, plane)
 
         active_view.SketchPlane = sp
-        doc.Regenerate
+        doc.Regenerate()
 
 # Pick the placement point
 with forms.WarningBar(title="Pick Point"):
@@ -97,4 +99,20 @@ else:
 
 # Finally, create the dimension
 with revit.Transaction("Dim Grids", doc=revit.doc):
-    revit.doc.Create.NewDimension(active_view, line, ref_array)
+    try:
+        dim = revit.doc.Create.NewDimension(active_view, line, ref_array)
+        if dim is None:
+            forms.alert(
+                "Revit accepted the dimension call but produced no dimension.\n"
+                "Most common cause: the selected grids aren't all parallel "
+                "(don't mix horizontal and vertical grids in one call).",
+                exitscript=True,
+            )
+    except Exception as ex:
+        forms.alert(
+            "Could not create dimension.\n\nRevit said: {}\n\n"
+            "Most common cause: the selected grids aren't all parallel "
+            "(don't mix horizontal and vertical grids in one call), "
+            "or the picked point isn't on a line that crosses all grids.".format(ex),
+            exitscript=True,
+        )

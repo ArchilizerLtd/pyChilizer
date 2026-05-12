@@ -39,40 +39,18 @@ multicat_filter = DB.ElementMulticategoryFilter(cat_list)
 collect_tags = DB.FilteredElementCollector(revit.doc)\
     .WherePasses(multicat_filter).WhereElementIsElementType()
 
-# selection filter for InPlace elements
-class LegendComponentFilter(ISelectionFilter):
-    def AllowElement(self, elem):
+source_element = DB.FilteredElementCollector(revit.doc, legend.Id)\
+    .OfCategory(BIC.OST_LegendComponents)\
+    .WhereElementIsNotElementType()\
+    .FirstElement()
 
-        try:
-
-            if elem.Category.IntegerValue == int(BIC.OST_LegendComponents):
-                return True
-            else:
-                return False
-        except AttributeError:
-            return False
-    def AllowReference(self, reference):
-        try:
-            if isinstance(revit.doc.GetElement(reference),BIC.OST_LegendComponents):
-                return True
-            else:
-                return False
-        except AttributeError:
-            return False
-
-def select_legend_component_filter():
-    # select elements while applying filter
-    try:
-        with forms.WarningBar(title="Select Source Legend Component"):
-            ref = rpw.revit.uidoc.Selection.PickObject(ObjectType.Element, LegendComponentFilter())
-
-            selection = revit.doc.GetElement(ref)
-            return selection
-    except Exceptions.OperationCanceledException:
-        forms.alert("Cancelled", ok=True, warn_icon=False, exitscript=True)
-
-
-source_element = revit.get_selection().elements[0]
+if source_element is None:
+    forms.alert(
+        "This Legend View has no existing Legend Components.\n\n"
+        "Drag any family from the Project Browser onto this view first, "
+        "then re-run the script.",
+        exitscript=True,
+    )
 ordered_symbols = OrderedDict()
 
 for sym in collect_tags:

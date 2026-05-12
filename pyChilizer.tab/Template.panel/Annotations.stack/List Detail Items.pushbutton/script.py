@@ -67,6 +67,16 @@ with forms.WarningBar(title="Pick Point"):
         location = revit.uidoc.Selection.PickPoint()
     except Exceptions.OperationCanceledException:
         forms.alert("Cancelled", ok=True, exitscript=True)
+    except Exceptions.InvalidOperationException as ex:
+        forms.alert(
+            "Cannot pick a point on this view.\n\n"
+            "Revit said: {}\n\n"
+            "If this is a Drafting View, set a work plane via "
+            "Architecture > Work Plane > Set, then re-run.\n"
+            "Otherwise, switch to a Drafting View, Legend, Plan, "
+            "Section or Elevation view.".format(ex.Message),
+            exitscript=True,
+        )
 
 coll_dc_types = DB.FilteredElementCollector(revit.doc).OfCategory(DB.BuiltInCategory.OST_DetailComponents).OfClass(
     DB.FamilySymbol).WhereElementIsElementType()

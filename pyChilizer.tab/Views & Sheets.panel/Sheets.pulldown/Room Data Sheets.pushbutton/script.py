@@ -226,14 +226,27 @@ for room in selection:
             else:
                 # create marker
                 new_marker = DB.ElevationMarker.CreateElevationMarker(doc, elev_type.Id, rm_loc, view_scale)
-                # create 4 elevations
-                try:
-                    for i in range(4):
+                # create up to 4 elevations - skip unavailable indices, collect per-index failures
+                failures = []
+                for i in range(4):
+                    if not new_marker.IsAvailableIndex(i):
+                        continue
+                    try:
                         elevation = new_marker.CreateElevation(doc, viewplan.Id, i)
                         elevations_col.append(elevation)
-                except Exceptions.ArgumentException:
-                    forms.alert("Elevation Marker is invalid. Please review the Elevation Marker and retry",
-                                exitscript=True)
+                    except Exceptions.ArgumentException as ex:
+                        failures.append("  index {}: {}".format(i, ex.Message))
+                if not elevations_col:
+                    forms.alert(
+                        "Could not create any elevations for room '{}'.\n\n"
+                        "Revit reported:\n{}\n\n"
+                        "Likely causes: the chosen Elevation view type is incompatible "
+                        "with this plan, the plan's scale was modified, or the marker "
+                        "location is outside the view's crop region.".format(
+                            room_name_nr, "\n".join(failures) if failures else "  (no details)"
+                        ),
+                        exitscript=True,
+                    )
                 # rotate marker with room rotation angle
                 doc.Regenerate()
                 marker_axis = DB.Line.CreateBound(rm_loc, rm_loc + DB.XYZ.BasisZ)
