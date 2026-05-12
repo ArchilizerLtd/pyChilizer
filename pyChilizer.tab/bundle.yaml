@@ -1,9 +1,9 @@
 layout:
   - About[beforeall:]
-  - Worksets
-  - Select
-  - Inspect
-  - Annotate
+  - Elements
+  - Selection
+  - Views & Sheets
+  - Reference
+  - Rooms
   - Project
   - Template
-  - Families
