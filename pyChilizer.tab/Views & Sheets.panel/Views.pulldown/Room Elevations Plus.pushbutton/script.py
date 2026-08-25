@@ -74,8 +74,6 @@ with revit.Transaction("Create Room Sections", doc):
 
         boundaries = geo.discard_short(geo.get_room_bound(room), MINIMAL_LENGTH)
         boundaries = [curve for curve in boundaries if isinstance(curve, DB.Line)]
-        # get unique boundaries by sorting lines
-        # bound_curves = geo.get_unique_borders(boundaries, tolerance)
         elevation_labels = database.get_alphabetic_labels(len(boundaries))
         print("Created Elevations for room {}".format(room_name_nr))
 

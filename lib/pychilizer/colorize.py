@@ -112,7 +112,7 @@ def revit_colour(hex):
 
 
 def random_colour_hsv(n):
-    # return random colour based on
+    # return random colour based on Hue Saturation Value
     hsv_tuples = [(i * 1.0 / n, 0.85, 0.85) for i in range(n)]
 
     rgb_out = []
@@ -131,10 +131,8 @@ def get_colours(n):
     col_dict = polylinear_gradient(colours, n)
     chop_col_list = col_dict["hex"][0:n]
     # gradient method
+    # random method is also available - see random_colour_hsv
     revit_colours = [revit_colour(h) for h in chop_col_list]
-    # random method
-    # revit_colours = colorize.random_colour_hsv(len(types_dict))
-
     for x in range(10):
         random.shuffle(revit_colours)
     return revit_colours

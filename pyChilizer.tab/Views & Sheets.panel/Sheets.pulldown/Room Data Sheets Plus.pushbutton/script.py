@@ -227,9 +227,6 @@ for room in selection:
         # Create Elevations
         elevations_col = []
 
-        # discard segments lying on the same axis of the room - not in scope anymore
-        # unique_borders = geo.get_unique_borders(room_boundaries, UNIQUE_BORDERS_TOLERANCE)
-
         border_widths = []
         for border in room_boundaries:
 

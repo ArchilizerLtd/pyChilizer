@@ -174,17 +174,6 @@ def line_as_vector(line):
     return vector
 
 
-def rotation_angle(line, base):
-    # calculate the rotation of the line from a given reference
-
-    vector = line_as_vector(line)
-    up = DB.XYZ(base.X, base.Y+1, base.Z)
-    y_direction = up-base
-
-    angle = vector.AngleTo(y_direction)
-    return angle
-
-
 def room_rotation_angle(room):
     # get the angle of the room's longest boundary to Y axis
     # choose one longest curve to use as reference for rotation
@@ -366,30 +355,6 @@ def get_aligned_crop(geo, transform):
     crop_loop = DB.CurveLoop.Create(List[DB.Curve](rotate_curves_back))
 
     return crop_loop
-
-
-def get_unique_borders(borders, tolerance):
-    # sort the borders discarding overlapping ones (lying on same axis)
-    axis_set = []
-    sorted_lines = []
-    for curve in borders:
-        deriv = curve.ComputeDerivatives(0.5, True)
-        tangent = deriv.BasisX
-        pt = curve.Evaluate(0.5, True)
-        axis = DB.Line.CreateUnbound(pt, tangent)
-        on_axis = False
-        if not axis_set:
-            axis_set.append(axis)
-            sorted_lines.append(curve)
-        for line in axis_set:
-            distance = line.Distance(pt)
-            # print (distance)
-            if distance <= tolerance:
-                on_axis = True
-        if not on_axis:
-            axis_set.append(axis)
-            sorted_lines.append(curve)
-    return sorted_lines
 
 
 def discard_short(curves, threshold):
