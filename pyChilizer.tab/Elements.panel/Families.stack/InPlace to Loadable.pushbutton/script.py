@@ -5,6 +5,7 @@ __doc__ = "Select an In-Place element to convert into a Loadable family and plac
 
 from pyrevit import revit, DB, UI, HOST_APP, forms, script
 from pyrevit.compat import get_elementid_value_func
+from pyrevit.coreutils import cleanup_filename
 import tempfile
 from pyrevit.revit.db import query
 from Autodesk.Revit.UI.Selection import ObjectType, ISelectionFilter
@@ -12,6 +13,7 @@ output = script.get_output()
 from Autodesk.Revit import Exceptions
 from pychilizer import database, geo
 from os.path import isfile
+
 
 get_elementid_value = get_elementid_value_func()
 
@@ -137,21 +139,21 @@ if not isfile(fam_template_path):
 # define new family doc
 try:
     new_family_doc = revit.doc.Application.NewFamilyDocument(fam_template_path)
-except:
+except (Exceptions.ArgumentException, Exceptions.InvalidOperationException) as err:
+    logger.error("Failed to open family template '{}': {}".format(fam_template_path, err))
     forms.alert(msg="No Template",
                 sub_msg="No Template for family found.",
                 ok=True,
                 warn_icon=True, exitscript=True)
-
+    
 
 # construct family and family type names:
 project_number = revit.doc.ProjectInformation.Number
 if not project_number:
     project_number = "000"
 fam_name = project_number+ "_" + source_element.Symbol.Family.Name
-# replace spaces (can cause errors)
-fam_name = fam_name.strip(" ")
-
+# cleanup illegal characters, replace spaces (can cause errors)
+fam_name = cleanup_filename(fam_name, windows_safe=True).strip(" ")
 # if family under this name exists, keep adding Copy 1
 if get_fam_by_name_and_cat(fam_name):
     while get_fam_by_name_and_cat(fam_name):
@@ -161,17 +163,17 @@ if get_fam_by_name_and_cat(fam_name):
 fam_path = tempfile.gettempdir() + "/" + fam_name + ".rfa"
 saveas_opt = DB.SaveAsOptions()
 saveas_opt.OverwriteExistingFile = True
-new_family_doc.SaveAs(fam_path, saveas_opt)
-
+try:
+    new_family_doc.SaveAs(fam_path, saveas_opt)
+except Exception as err:
+    forms.alert(str(err), sub_msg=fam_path, title="Unable to save family", exitscript=True)
 # Load Family into project
 with revit.Transaction("Load Family", revit.doc):
     try:
         loaded_f = revit.db.create.load_family(fam_path, doc=revit.doc)
         revit.doc.Regenerate()
-    # TODO: catch exception of name conflict
     except Exceptions.InvalidOperationException:
         forms.alert("Unable to Load Family", exitscript=True)
-
 
 # Copy geometry from In-Place to Loadable family
 with revit.Transaction(doc=new_family_doc, name="Copy Geometry"):
@@ -187,8 +189,8 @@ with revit.Transaction(doc=new_family_doc, name="Copy Geometry"):
         try:
             geo_mat_param = copied_geo.get_Parameter(DB.BuiltInParameter.MATERIAL_ID_PARAM)
             new_family_doc.FamilyManager.AssociateElementParameterToFamilyParameter(geo_mat_param, new_mat_param)
-        except Exception as err:
-            logger.error(err)
+        except (Exceptions.ArgumentException, Exceptions.InvalidOperationException) as err:
+            logger.error("Could not associate material parameter: {}".format(err))
         # if the geometry has a subcategory name
         if solids_dict[geometry]:
             # check if the subcategory exists
@@ -220,34 +222,29 @@ save_opt = DB.SaveOptions()
 new_family_doc.Save(save_opt)
 new_family_doc.Close()
 
-
 # non-structural type to place family instance
 str_type = DB.Structure.StructuralType.NonStructural
 
 # Reload family and place it in the same position as the original element
-with DB.Transaction(revit.doc, "Reload Family") as t:
-    t.Start()
-    # TODO: solve error here
+with revit.Transaction("Reload Family", revit.doc):
     loaded_f = revit.db.create.load_family(fam_path, doc=revit.doc)
     revit.doc.Regenerate()
     if not loaded_f:
-        t.RollBack()
         forms.alert("Error loading family", exitscript=True)
     # find family symbol and activate
     fam_symbol = None
     get_fam = DB.FilteredElementCollector(revit.doc).OfClass(DB.FamilySymbol).WhereElementIsElementType().ToElements()
 
     for fam in get_fam:
-
         type_name = fam.get_Parameter(DB.BuiltInParameter.SYMBOL_NAME_PARAM).AsString()
         if str.strip(type_name) == fam_name:
             fam_symbol = fam
             fam_symbol.Name = fam_name
-
             if not fam_symbol.IsActive:
                 fam_symbol.Activate()
                 revit.doc.Regenerate()
+    if not fam_symbol:
+        forms.alert("Could not find the loaded family type '{}' to place.".format(fam_name), exitscript=True)
     # place family symbol at position
     new_fam_instance = revit.doc.Create.NewFamilyInstance(family_origin, fam_symbol, str_type)
-    t.Commit()
 print("Created and placed family instance : {1} {0} ".format(output.linkify(new_fam_instance.Id), fam_name))
