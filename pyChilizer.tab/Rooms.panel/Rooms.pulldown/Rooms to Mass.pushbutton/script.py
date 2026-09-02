@@ -1,7 +1,7 @@
 from pyrevit import revit, DB, script, forms
 import tempfile
 import re
-from pychilizer import select, geo, database
+from pychilizer import database
 from Autodesk.Revit import Exceptions
 
 logger = script.get_logger()
@@ -9,7 +9,7 @@ output = script.get_output()
 doc = __revit__.ActiveUIDocument.Document
 
 
-selection = select.select_with_cat_filter(DB.BuiltInCategory.OST_Rooms, "Pick Rooms to Transform")
+selection = revit.selection.pick_elements_by_category(DB.BuiltInCategory.OST_Rooms, message='Pick Rooms to Transform')
 
 if selection:
     # Create family doc from template
