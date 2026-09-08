@@ -136,7 +136,7 @@ def create_sheet(sheet_num, sheet_name, titleblock, doc=revit.doc):
     new_datasheet = DB.ViewSheet.Create(doc, titleblock)
     new_datasheet.Name = sheet_name
 
-    while get_sheet(sheet_num):
+    while get_sheet(sheet_num, doc):
         sheet_num = coreutils.increment_str(sheet_num, 1)
     new_datasheet.SheetNumber = str(sheet_num)
 
@@ -391,9 +391,9 @@ def tb_name_match(tb_name, doc=revit.doc):
             return joined_name
 
 
-def unique_view_name(name, suffix=None):
+def unique_view_name(name, suffix=None, doc=revit.doc):
     unique_v_name = name + suffix
-    while get_view(unique_v_name):
+    while get_view(unique_v_name, doc=revit.doc):
         unique_v_name = unique_v_name + " Copy 1"
     return unique_v_name
 

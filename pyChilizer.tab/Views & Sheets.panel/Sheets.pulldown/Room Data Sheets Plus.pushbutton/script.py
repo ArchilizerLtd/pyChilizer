@@ -131,7 +131,7 @@ if not rds_floor_plan_type:
     some_fl_plan_type = database.get_view_family_types(DB.ViewFamily.FloorPlan, doc)[0]
     with revit.Transaction("Duplicate Floor Plan Type", doc):
         rds_floor_plan_type = some_fl_plan_type.Duplicate(RDS_FLOOR_PLAN_TYPE_NAME)
-        rds_floor_plan_type.DefaultTemplateId = DB.ElementId(-1)
+        rds_floor_plan_type.DefaultTemplateId = DB.ElementId.InvalidElementId
 
 # get default elevation template
 default_elevation_template = doc.GetElement(elev_type.DefaultTemplateId)
@@ -143,7 +143,7 @@ if default_elevation_template:
                 "To proceed, we need to remove a Default View Template associated with Elevation Type. Is that cool with ya?",
                 ok=False, yes=True, no=True, exitscript=True):
             with revit.Transaction("Remove ViewTemplate"):
-                elev_type.DefaultTemplateId = DB.ElementId(-1)
+                elev_type.DefaultTemplateId = DB.ElementId.InvalidElementId
 
 ui.set_config("sheet_number", chosen_sheet_nr)
 ui.set_config("crop_offset", form.values["crop_offset"])
@@ -217,8 +217,8 @@ for room in selection:
                 + room.get_Parameter(DB.BuiltInParameter.ROOM_NAME).AsString())
 
         # rename views
-        viewplan.Name = database.unique_view_name(room_name_nr, suffix=" Plan")
-        viewRCP.Name = database.unique_view_name(room_name_nr, suffix=" Reflected Ceiling Plan")
+        viewplan.Name = database.unique_view_name(room_name_nr, suffix=" Plan", doc=doc)
+        viewRCP.Name = database.unique_view_name(room_name_nr, suffix=" Reflected Ceiling Plan", doc=doc)
 
         # activate annotation crop
         database.set_anno_crop(viewplan)
@@ -266,7 +266,7 @@ for room in selection:
         for el, i in izip(elevations_col, elevation_count):
             el.Scale = VIEW_SCALE
             el_suffix = " Elevation " + i
-            el.Name = database.unique_view_name(room_name_nr, el_suffix)
+            el.Name = database.unique_view_name(room_name_nr, el_suffix, doc=doc)
             database.set_anno_crop(el)
 
         sheet = database.create_sheet(chosen_sheet_nr, room_name_nr, chosen_tb.Id, doc)
